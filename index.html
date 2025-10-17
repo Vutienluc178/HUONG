@@ -71,6 +71,16 @@
             border: 3px solid #0ea5e9; /* cyan-500 */
             transform: scale(1.05);
         }
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 210; /* Above background, below modal content */
+            pointer-events: none;
+            display: none;
+        }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
@@ -132,6 +142,7 @@
     <div id="fullscreen-control" class="fixed top-5 right-16 text-3xl cursor-pointer z-50" title="Toàn màn hình" style="text-shadow: 0 0 10px #0ea5e9;">⛶</div>
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100]"></div>
     <div id="feedback-overlay" class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white opacity-0 pointer-events-none transition-opacity duration-500 z-[240]"></div>
+    <canvas id="fireworks-canvas"></canvas>
 
     <!-- Main Menu Screen -->
     <div id="main-menu-screen" class="screen justify-center items-center active">
@@ -145,12 +156,12 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <button id="mission-space-btn" class="btn-glow w-full text-xl py-4">🚀 Chinh Phục Ngân Hà</button>
-                <button id="mission-science-btn" class="btn-glow w-full text-xl py-4">🪐 Phòng Thí Nghiệm Bí Ẩn</button>
-                <button id="mission-jungle-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #16a34a, #22c55e);">🌳 Cuộc Đua Kỳ Thú</button>
-                <button id="mission-ocean-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #0891b2, #22d3ee);">🐠 Săn Tìm Kho Báu</button>
-                <button id="mission-fairytale-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #c026d3, #ec4899);">🏰 Lâu Đài Phép Thuật</button>
-                <button id="mission-vietnam-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #dc2626, #f97316);">🇻🇳 Khám Phá Việt Nam Diệu Kỳ</button>
+                <button data-mission-id="space" class="mission-btn btn-glow w-full text-xl py-4">🚀 Chinh Phục Ngân Hà</button>
+                <button data-mission-id="science" class="mission-btn btn-glow w-full text-xl py-4">🪐 Phòng Thí Nghiệm Bí Ẩn</button>
+                <button data-mission-id="jungle" class="mission-btn btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #16a34a, #22c55e);">🌳 Cuộc Đua Kỳ Thú</button>
+                <button data-mission-id="ocean" class="mission-btn btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #0891b2, #22d3ee);">🐠 Săn Tìm Kho Báu</button>
+                <button data-mission-id="fairytale" class="mission-btn btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #c026d3, #ec4899);">🏰 Lâu Đài Phép Thuật</button>
+                <button data-mission-id="vietnam" class="mission-btn btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #dc2626, #f97316);">🇻🇳 Khám Phá Việt Nam Diệu Kỳ</button>
             </div>
             <button id="settings-btn" class="btn-glow w-full text-xl py-3 mt-4" style="background: linear-gradient(45deg, #334155, #475569);">⚙️ Cài Đặt</button>
         </div>
@@ -187,6 +198,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Intro Modal -->
+    <div id="intro-modal" class="fixed inset-0 bg-black bg-opacity-70 justify-center items-center z-[200] hidden">
+        <div class="glass-card p-8 w-full max-w-2xl text-center">
+            <div id="intro-icon" class="text-8xl mb-4"></div>
+            <h1 id="intro-title" class="text-4xl font-bold text-cyan-300 mb-2"></h1>
+            <p id="intro-text" class="text-lg text-amber-200 my-4 italic"></p>
+            <div class="flex space-x-4 mt-6">
+                <button id="back-from-intro-btn" class="btn-glow w-1/3 text-2xl py-4" style="background: linear-gradient(45deg, #6b7280, #4b5563);">QUAY LẠI</button>
+                <button id="start-from-intro-btn" class="btn-glow w-2/3 text-2xl py-4">BẮT ĐẦU!</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Pause Modal -->
     <div id="pause-modal" class="fixed inset-0 bg-black bg-opacity-70 justify-center items-center z-[200] hidden">
@@ -196,43 +220,35 @@
         </div>
     </div>
 
-    <!-- Setup Screen -->
-    <div id="setup-screen" class="screen justify-center items-center">
-        <div class="glass-card p-8 w-full max-w-3xl text-center">
-            <h1 id="setup-title" class="text-4xl font-bold text-cyan-300 mb-2">CHUẨN BỊ SỨ MỆNH</h1>
-            <p id="mission-intro-text" class="text-lg text-amber-200 my-4 italic"></p>
-            <p class="text-slate-300 mb-6">Bạn đã sẵn sàng để bắt đầu chưa? Bạn có thể thay đổi bộ câu hỏi trong phần ⚙️ Cài Đặt.</p>
-            <div class="flex space-x-4 mt-6">
-                <button id="back-to-menu-btn" class="btn-glow w-1/3 text-2xl py-4" style="background: linear-gradient(45deg, #6b7280, #4b5563);">QUAY LẠI</button>
-                <button id="start-game-btn" class="btn-glow w-2/3 text-2xl py-4">BẮT ĐẦU!</button>
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen flex-col p-4 md:p-8 w-full h-full">
+        <!-- Top Bar -->
+        <div class="flex justify-between items-center w-full mb-4 flex-wrap">
+            <div class="flex items-center gap-4">
+                <div id="progress-indicator" class="text-xl md:text-2xl font-bold text-cyan-300"></div>
+                <div id="evolution-display" class="text-4xl md:text-5xl"></div>
             </div>
+            <div id="score-display" class="text-2xl md:text-3xl font-bold text-amber-300">Điểm: 0</div>
+            <div class="flex items-center gap-4">
+                <div class="text-4xl md:text-5xl font-bold text-fuchsia-400" id="timer"></div>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <button id="quit-game-btn" class="text-3xl md:text-4xl cursor-pointer hover:scale-110 transition-transform" title="Về màn hình chính">⏪</button>
+                    <button id="pause-btn" class="text-3xl md:text-4xl cursor-pointer hover:scale-110 transition-transform" title="Tạm dừng">⏸️</button>
+                    <button id="help-btn" class="btn-glow px-3 py-1 md:px-4 md:py-2 rounded-lg text-base md:text-lg" style="background: linear-gradient(45deg, #ec4899, #d946ef);">⚡ Trợ Giúp</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Area -->
+        <div id="question-container" class="flex-grow w-full flex items-center justify-center my-4 glass-card p-6">
+            <h2 id="question-text" class="text-4xl md:text-6xl font-semibold text-white text-center"></h2>
+        </div>
+
+        <!-- Answers Area -->
+        <div id="answers-container" class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
         </div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="screen justify-center items-center">
-        <div class="glass-card p-8 w-full max-w-4xl text-center">
-             <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center gap-4 w-1/3">
-                    <div id="progress-indicator" class="text-xl font-bold text-cyan-300"></div>
-                    <div id="evolution-display" class="text-5xl"></div>
-                </div>
-                <div id="score-display" class="text-3xl font-bold text-amber-300 w-1/3 text-center">Điểm: 0</div>
-                <div class="flex items-center gap-4 w-1/3 justify-end">
-                    <div class="text-5xl font-bold text-fuchsia-400" id="timer"></div>
-                    <div class="flex items-center gap-4">
-                        <button id="quit-game-btn" class="text-4xl cursor-pointer hover:scale-110 transition-transform" title="Về màn hình chính">⏪</button>
-                        <button id="pause-btn" class="text-4xl cursor-pointer hover:scale-110 transition-transform" title="Tạm dừng">⏸️</button>
-                        <button id="help-btn" class="btn-glow px-4 py-2 rounded-lg text-lg" style="background: linear-gradient(45deg, #ec4899, #d946ef);">⚡ Trợ Giúp</button>
-                    </div>
-                </div>
-            </div>
-            <div id="question-container" class="bg-slate-900 bg-opacity-50 p-6 rounded-lg min-h-[150px] flex items-center justify-center border border-slate-700">
-                <h2 id="question-text" class="text-3xl font-semibold text-white"></h2>
-            </div>
-            <div id="answers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"></div>
-        </div>
-    </div>
 
     <!-- Result Screen -->
     <div id="result-screen" class="screen justify-center items-center">
@@ -241,7 +257,16 @@
             <div id="result-icon" class="text-8xl mb-6"></div>
             <p id="final-score-display" class="text-3xl text-amber-300 font-bold mb-6"></p>
             <p id="result-message" class="text-xl text-slate-300 mb-8"></p>
-            <button id="play-again-btn" class="btn-glow w-full text-2xl py-4">CHƠI LẠI TỪ ĐẦU</button>
+            <button id="continue-to-thanks-btn" class="btn-glow w-full text-2xl py-4">Kết Thúc</button>
+        </div>
+    </div>
+
+    <!-- Thank You Screen -->
+    <div id="thank-you-screen" class="screen justify-center items-center" style="z-index: 220;">
+        <div class="glass-card p-12 w-full max-w-2xl text-center">
+            <h2 class="text-5xl font-bold text-cyan-300 mb-8">Cảm Ơn!</h2>
+            <p class="text-2xl text-slate-200 mb-10">Cảm ơn quý thầy cô và các em học sinh đã tham gia tiết học vui vẻ này!</p>
+            <button id="home-btn" class="btn-glow w-full text-2xl py-4">VỀ MÀN HÌNH CHÍNH</button>
         </div>
     </div>
     
@@ -264,13 +289,13 @@
             default_vietnam: `url('https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop')`
         };
         const missions = {
-            space: { title: 'Chinh Phục Ngân Hà', intro: "Chào mừng thuyền trưởng! Hãy trả lời các câu hỏi để lắp ráp con tàu vũ trụ và bắt đầu hành trình khám phá các vì sao nhé!", progressText: 'Hành tinh', questions: `Năm nay Nam 7 tuổi chị Mai hơn Nam 5 tuổi. Hỏi năm nay chị Mai bao nhiêu tuổi?,2 tuổi,12 tuổi,13 tuổi, ,B
+            space: { title: 'Chinh Phục Ngân Hà', icon: '🚀', intro: "Chào mừng thuyền trưởng! Hãy trả lời các câu hỏi để lắp ráp con tàu vũ trụ và bắt đầu hành trình khám phá các vì sao nhé!", progressText: 'Hành tinh', questions: `Năm nay Nam 7 tuổi chị Mai hơn Nam 5 tuổi. Hỏi năm nay chị Mai bao nhiêu tuổi?,2 tuổi,12 tuổi,13 tuổi, ,B
 Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép tính gì?,Phép trừ,Phép cộng, , ,B`, backgroundImage: backgrounds.default_space, audio: playSciFiMusic, evolution: ['🏗️', '🛠️', '🚀', '✨'], evolutionTriggers: [0, 1, 2, 3], badge: '🏅' },
-            science: { title: 'Phòng Thí Nghiệm Bí Ẩn', intro: "Nhà khoa học tài ba ơi! Các thí nghiệm đang chờ bạn. Mỗi câu trả lời đúng sẽ giúp hành tinh của chúng ta thêm xanh tươi đó!", progressText: 'Thí nghiệm', questions: `Nước chiếm bao nhiêu phần trăm bề mặt Trái Đất?,51%,61%,71%,81%,C\nChất nào cần thiết cho sự quang hợp của cây xanh?,Oxy,Carbon Dioxide,Nitơ,Hydro,B\nHành tinh nào được mệnh danh là "Hành tinh Đỏ"?,Sao Kim,Sao Hỏa,Sao Mộc,Sao Thổ,B\nĐơn vị cơ bản của sự sống là gì?,Phân tử,Tế bào,Mô,Cơ quan,B\nLoài động vật có vú nào biết bay?,Chim cánh cụt,Dơi,Đà điểu,Cá heo,B`, backgroundImage: `url('https://images.unsplash.com/photo-1446776811953-b23d579424c8?q=80&w=2070&auto=format&fit=crop')`, audio: playSciFiMusic, evolution: ['🌑', '💧', '🌱', '🌳'], evolutionTriggers: [0, 2, 4, 6], badge: '🔬' },
-            jungle: { title: 'Cuộc Đua Kỳ Thú', intro: "Nhà thám hiểm dũng cảm, khu rừng rậm rạp đầy thử thách đang chờ đợi. Hãy vượt qua các câu hỏi để xem cái cây của bạn lớn nhanh thế nào nhé!", progressText: 'Thử thách', questions: `Loài động vật nào được mệnh danh là "chúa tể sơn lâm"?,Sư tử,Hổ,Báo,Voi,A\nCây nào sau đây thường mọc ở sa mạc?,Cây thông,Cây dương xỉ,Cây xương rồng,Cây phong,C\nCon vật nào có thể thay đổi màu sắc để ngụy trang?,Tắc kè hoa,Hà mã,Gấu trúc,Kangaroo,A\n"Vua của các loài trái cây" ở vùng nhiệt đới là quả gì?,Xoài,Dứa,Sầu riêng,Mít,C\nDòng sông dài nhất thế giới là sông nào?,Sông Mekong,Sông Nile,Sông Amazon,Sông Mississippi,C`, backgroundImage: backgrounds.default_jungle, audio: playJungleMusic, evolution: ['🌱', '🌿', '🌳', '🐒'], evolutionTriggers: [0, 2, 4, 6], badge: '🌴' },
-            ocean: { title: 'Săn Tìm Kho Báu', intro: "Nào ta cùng dong buồm ra khơi! Chiếc rương kho báu bí ẩn đang bị khóa chặt. Trả lời đúng để tìm chìa khóa và khám phá bí mật bên trong!", progressText: 'Cửa ải', questions: `Loài cá nào lớn nhất thế giới?,Cá mập trắng,Cá voi xanh,Cá nhám voi,Cá heo,C\nHầu hết san hô được tìm thấy ở vùng nước nào?,Nước ấm, nông,Nước lạnh, sâu,Nước ngọt,Nước lợ,A\nĐại dương nào lớn nhất trên Trái Đất?,Đại Tây Dương,Ấn Độ Dương,Thái Bình Dương,Bắc Băng Dương,C\nLoài vật nào có 8 xúc tu?,Sứa,Cá heo,Bạch tuộc,Cua,C\nHiện tượng nước biển dâng lên và hạ xuống gọi là gì?,Sóng thần,Thủy triều,Bão,Lốc xoáy,B`, backgroundImage: backgrounds.default_ocean, audio: playOceanMusic, evolution: ['📦', '🗝️', '✨', '💎'], evolutionTriggers: [0, 2, 4, 6], badge: '🐠' },
-            fairytale: { title: 'Lâu Đài Phép Thuật', intro: "Hoàng tử và công chúa ơi! Thế giới cổ tích diệu kỳ đang mở ra. Hãy dùng trí thông minh để xây dựng nên tòa lâu đài tráng lệ của riêng mình nhé!", progressText: 'Chương', questions: `Trong truyện Tấm Cám, Tấm đã biến thành con vật nào đầu tiên?,Con chim vàng anh,Con cá bống,Con gà,Con mèo,A\nAi đã giúp Lọ Lem đi dự vũ hội?,Bà tiên,Ông bụt,Mẹ kế,Phù thủy,A\nNàng Bạch Tuyết đã ăn phải thứ gì của mụ phù thủy?,Quả táo độc,Quả lê độc,Quả cam độc,Quả nho độc,A\nNhân vật nào có chiếc mũi dài ra khi nói dối?,Cậu bé Pinocchio,Cậu bé bút chì,Cậu bé người gỗ,Cậu bé rơm,A\nTrong truyện "Sự tích cây vú sữa", cậu bé đã làm gì khiến mẹ buồn?,Ham chơi không về,Nói dối mẹ,Không nghe lời mẹ,Tất cả các đáp án trên,D`, backgroundImage: backgrounds.default_fairytale, audio: playFairyTaleMusic, evolution: ['🎃', '✨', '👑', '🏰'], evolutionTriggers: [0, 2, 4, 6], badge: '👑' },
-            vietnam: { title: 'Khám Phá Việt Nam Diệu Kỳ', intro: "Bạn đã sẵn sàng cho chuyến du lịch vòng quanh Việt Nam chưa? Mỗi câu trả lời đúng sẽ đưa chúng ta đến một địa danh mới trên bản đồ hình chữ S!", progressText: 'Trạm', questions: `Vịnh nào của Việt Nam được UNESCO công nhận là Di sản Thiên nhiên Thế giới?,Vịnh Cam Ranh,Vịnh Lăng Cô,Vịnh Hạ Long,Vịnh Vĩnh Hy,C\nPhở là món ăn đặc trưng của miền nào?,Miền Nam,Miền Trung,Miền Bắc,Miền Tây,C\nThành phố nào được mệnh danh là "Thành phố ngàn hoa"?,Đà Lạt,Nha Trang,Hội An,Sa Pa,A\nQuần đảo nào của Việt Nam nằm ở phía Tây Nam của Tổ quốc?,Quần đảo Hoàng Sa,Quần đảo Trường Sa,Quần đảo Thổ Chu,Quần đảo Côn Sơn,C\nLễ hội nào sau đây là một lễ hội lớn ở Đồng bằng Sông Cửu Long?,Lễ hội Chùa Hương,Lễ hội Đền Hùng,Lễ hội Ok Om Bok,Lễ hội Gầu Tào,C`, backgroundImage: backgrounds.default_vietnam, audio: playVietnamMusic, evolution: ['🗺️', '📍', '⭐', '🇻🇳'], evolutionTriggers: [0, 2, 4, 6], badge: '⭐' }
+            science: { title: 'Phòng Thí Nghiệm Bí Ẩn', icon: '🪐', intro: "Nhà khoa học tài ba ơi! Các thí nghiệm đang chờ bạn. Mỗi câu trả lời đúng sẽ giúp hành tinh của chúng ta thêm xanh tươi đó!", progressText: 'Thí nghiệm', questions: `Nước chiếm bao nhiêu phần trăm bề mặt Trái Đất?,51%,61%,71%,81%,C\nChất nào cần thiết cho sự quang hợp của cây xanh?,Oxy,Carbon Dioxide,Nitơ,Hydro,B\nHành tinh nào được mệnh danh là "Hành tinh Đỏ"?,Sao Kim,Sao Hỏa,Sao Mộc,Sao Thổ,B\nĐơn vị cơ bản của sự sống là gì?,Phân tử,Tế bào,Mô,Cơ quan,B\nLoài động vật có vú nào biết bay?,Chim cánh cụt,Dơi,Đà điểu,Cá heo,B`, backgroundImage: `url('https://images.unsplash.com/photo-1446776811953-b23d579424c8?q=80&w=2070&auto=format&fit=crop')`, audio: playSciFiMusic, evolution: ['🌑', '💧', '🌱', '🌳'], evolutionTriggers: [0, 2, 4, 6], badge: '🔬' },
+            jungle: { title: 'Cuộc Đua Kỳ Thú', icon: '🌳', intro: "Nhà thám hiểm dũng cảm, khu rừng rậm rạp đầy thử thách đang chờ đợi. Hãy vượt qua các câu hỏi để xem cái cây của bạn lớn nhanh thế nào nhé!", progressText: 'Thử thách', questions: `Loài động vật nào được mệnh danh là "chúa tể sơn lâm"?,Sư tử,Hổ,Báo,Voi,A\nCây nào sau đây thường mọc ở sa mạc?,Cây thông,Cây dương xỉ,Cây xương rồng,Cây phong,C\nCon vật nào có thể thay đổi màu sắc để ngụy trang?,Tắc kè hoa,Hà mã,Gấu trúc,Kangaroo,A\n"Vua của các loài trái cây" ở vùng nhiệt đới là quả gì?,Xoài,Dứa,Sầu riêng,Mít,C\nDòng sông dài nhất thế giới là sông nào?,Sông Mekong,Sông Nile,Sông Amazon,Sông Mississippi,C`, backgroundImage: backgrounds.default_jungle, audio: playJungleMusic, evolution: ['🌱', '🌿', '🌳', '🐒'], evolutionTriggers: [0, 2, 4, 6], badge: '🌴' },
+            ocean: { title: 'Săn Tìm Kho Báu', icon: '🐠', intro: "Nào ta cùng dong buồm ra khơi! Chiếc rương kho báu bí ẩn đang bị khóa chặt. Trả lời đúng để tìm chìa khóa và khám phá bí mật bên trong!", progressText: 'Cửa ải', questions: `Loài cá nào lớn nhất thế giới?,Cá mập trắng,Cá voi xanh,Cá nhám voi,Cá heo,C\nHầu hết san hô được tìm thấy ở vùng nước nào?,Nước ấm, nông,Nước lạnh, sâu,Nước ngọt,Nước lợ,A\nĐại dương nào lớn nhất trên Trái Đất?,Đại Tây Dương,Ấn Độ Dương,Thái Bình Dương,Bắc Băng Dương,C\nLoài vật nào có 8 xúc tu?,Sứa,Cá heo,Bạch tuộc,Cua,C\nHiện tượng nước biển dâng lên và hạ xuống gọi là gì?,Sóng thần,Thủy triều,Bão,Lốc xoáy,B`, backgroundImage: backgrounds.default_ocean, audio: playOceanMusic, evolution: ['📦', '🗝️', '✨', '💎'], evolutionTriggers: [0, 2, 4, 6], badge: '🐠' },
+            fairytale: { title: 'Lâu Đài Phép Thuật', icon: '🏰', intro: "Hoàng tử và công chúa ơi! Thế giới cổ tích diệu kỳ đang mở ra. Hãy dùng trí thông minh để xây dựng nên tòa lâu đài tráng lệ của riêng mình nhé!", progressText: 'Chương', questions: `Trong truyện Tấm Cám, Tấm đã biến thành con vật nào đầu tiên?,Con chim vàng anh,Con cá bống,Con gà,Con mèo,A\nAi đã giúp Lọ Lem đi dự vũ hội?,Bà tiên,Ông bụt,Mẹ kế,Phù thủy,A\nNàng Bạch Tuyết đã ăn phải thứ gì của mụ phù thủy?,Quả táo độc,Quả lê độc,Quả cam độc,Quả nho độc,A\nNhân vật nào có chiếc mũi dài ra khi nói dối?,Cậu bé Pinocchio,Cậu bé bút chì,Cậu bé người gỗ,Cậu bé rơm,A\nTrong truyện "Sự tích cây vú sữa", cậu bé đã làm gì khiến mẹ buồn?,Ham chơi không về,Nói dối mẹ,Không nghe lời mẹ,Tất cả các đáp án trên,D`, backgroundImage: backgrounds.default_fairytale, audio: playFairyTaleMusic, evolution: ['🎃', '✨', '👑', '🏰'], evolutionTriggers: [0, 2, 4, 6], badge: '👑' },
+            vietnam: { title: 'Khám Phá Việt Nam Diệu Kỳ', icon: '🇻🇳', intro: "Bạn đã sẵn sàng cho chuyến du lịch vòng quanh Việt Nam chưa? Mỗi câu trả lời đúng sẽ đưa chúng ta đến một địa danh mới trên bản đồ hình chữ S!", progressText: 'Trạm', questions: `Vịnh nào của Việt Nam được UNESCO công nhận là Di sản Thiên nhiên Thế giới?,Vịnh Cam Ranh,Vịnh Lăng Cô,Vịnh Hạ Long,Vịnh Vĩnh Hy,C\nPhở là món ăn đặc trưng của miền nào?,Miền Nam,Miền Trung,Miền Bắc,Miền Tây,C\nThành phố nào được mệnh danh là "Thành phố ngàn hoa"?,Đà Lạt,Nha Trang,Hội An,Sa Pa,A\nQuần đảo nào của Việt Nam nằm ở phía Tây Nam của Tổ quốc?,Quần đảo Hoàng Sa,Quần đảo Trường Sa,Quần đảo Thổ Chu,Quần đảo Côn Sơn,C\nLễ hội nào sau đây là một lễ hội lớn ở Đồng bằng Sông Cửu Long?,Lễ hội Chùa Hương,Lễ hội Đền Hùng,Lễ hội Ok Om Bok,Lễ hội Gầu Tào,C`, backgroundImage: backgrounds.default_vietnam, audio: playVietnamMusic, evolution: ['🗺️', '📍', '⭐', '🇻🇳'], evolutionTriggers: [0, 2, 4, 6], badge: '⭐' }
         };
         const correctFeedbackTexts = [ "Tuyệt vời!", "Chính xác!", "Làm tốt lắm!", "Bạn giỏi quá!", "Xuất sắc!" ];
         const wrongFeedbackTexts = [ "Cố lên nào!", "Sai một chút thôi!", "Thử lại câu sau nhé!", "Đừng nản lòng!", "Tiếp tục cố gắng!" ];
@@ -279,7 +304,7 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
         const screens = document.querySelectorAll('.screen');
         const setupTitle = document.getElementById('setup-title');
         const questionsInput = document.getElementById('questions-input');
-        const startGameBtn = document.getElementById('start-game-btn');
+        const startGameBtn = document.getElementById('start-from-intro-btn');
         const setupError = document.getElementById('setup-error');
         const progressIndicator = document.getElementById('progress-indicator');
         const timerDisplay = document.getElementById('timer');
@@ -307,9 +332,16 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
         const timeSettingInput = document.getElementById('time-setting-input');
         const quitGameBtn = document.getElementById('quit-game-btn');
         const feedbackOverlay = document.getElementById('feedback-overlay');
-        const missionIntroText = document.getElementById('mission-intro-text');
+        const missionIntroText = document.getElementById('intro-text');
         const missionSelectForEdit = document.getElementById('mission-select-for-edit');
         const fullscreenControl = document.getElementById('fullscreen-control');
+        const introModal = document.getElementById('intro-modal');
+        const introIcon = document.getElementById('intro-icon');
+        const introTitle = document.getElementById('intro-title');
+        const backFromIntroBtn = document.getElementById('back-from-intro-btn');
+        const continueToThanksBtn = document.getElementById('continue-to-thanks-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const fireworksCanvas = document.getElementById('fireworks-canvas');
 
         // --- Game State ---
         let questions = []; let currentQuestionIndex = 0; let timeLeft = 20; let timerInterval; let isHelpUsed = false; let isMuted = false; let currentMission; let score = 0; let currentMissionId;
@@ -445,6 +477,36 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
                     });
                     return;
                 }
+                 case 'firework': {
+                    // Whistle sound
+                    const whistle = audioCtx.createOscillator();
+                    const whistleGain = audioCtx.createGain();
+                    whistle.type = 'sine';
+                    whistle.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    whistle.frequency.linearRampToValueAtTime(1500, audioCtx.currentTime + 0.5);
+                    whistleGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    whistleGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                    whistle.connect(whistleGain).connect(audioCtx.destination);
+                    whistle.start();
+                    whistle.stop(audioCtx.currentTime + 0.5);
+
+                    // Explosion sound
+                    const noiseSource = audioCtx.createBufferSource();
+                    const bufferSize = audioCtx.sampleRate * 1;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    noiseSource.buffer = buffer;
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.5, audioCtx.currentTime + 0.5);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.2);
+                    noiseSource.connect(noiseGain).connect(audioCtx.destination);
+                    noiseSource.start(audioCtx.currentTime + 0.5);
+                    noiseSource.stop(audioCtx.currentTime + 1.2);
+                    return;
+                }
             }
         }
 
@@ -467,8 +529,8 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
 
         // --- Navigation & Pause ---
         function switchScreen(screenId) { screens.forEach(screen => { screen.classList.toggle('active', screen.id === screenId); }); }
-        function goToMenu() { stopBackgroundMusic(); const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(missions.space.backgroundImage); } updateMascot('neutral'); evolutionDisplay.textContent = ''; currentMission = null; displayBadges(); switchScreen('main-menu-screen'); }
-        function prepareGame(missionId) { playSound('click'); currentMissionId = missionId; currentMission = missions[missionId]; const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(currentMission.backgroundImage); } setupTitle.textContent = `SỨ MỆNH: ${currentMission.title.toUpperCase()}`; missionIntroText.textContent = currentMission.intro; switchScreen('setup-screen'); }
+        function goToMenu() { stopBackgroundMusic(); stopFireworks(); fireworksCanvas.style.display = 'none'; const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(missions.space.backgroundImage); } updateMascot('neutral'); evolutionDisplay.textContent = ''; currentMission = null; displayBadges(); switchScreen('main-menu-screen'); }
+        function prepareGame(missionId) { playSound('click'); currentMissionId = missionId; currentMission = missions[missionId]; const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(currentMission.backgroundImage); } introIcon.textContent = currentMission.icon; introTitle.textContent = currentMission.title; missionIntroText.textContent = currentMission.intro; introModal.classList.remove('hidden'); introModal.classList.add('flex'); }
         function pauseGame() { playSound('click'); clearInterval(timerInterval); stopBackgroundMusic(); pauseModal.classList.remove('hidden'); pauseModal.classList.add('flex'); }
         function resumeGame() { playSound('click'); pauseModal.classList.add('hidden'); pauseModal.classList.remove('flex'); if (!isMuted) { currentMission.audio(); } startTimer(true); } // Pass true to indicate resume
         function toggleFullScreen() {
@@ -496,20 +558,23 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
         }
         
         // --- Event Listeners ---
-        document.getElementById('mission-space-btn').addEventListener('click', () => prepareGame('space'));
-        document.getElementById('mission-science-btn').addEventListener('click', () => prepareGame('science'));
-        document.getElementById('mission-jungle-btn').addEventListener('click', () => prepareGame('jungle'));
-        document.getElementById('mission-ocean-btn').addEventListener('click', () => prepareGame('ocean'));
-        document.getElementById('mission-fairytale-btn').addEventListener('click', () => prepareGame('fairytale'));
-        document.getElementById('mission-vietnam-btn').addEventListener('click', () => prepareGame('vietnam'));
-        document.getElementById('back-to-menu-btn').addEventListener('click', () => { playSound('click'); goToMenu(); });
-        document.getElementById('play-again-btn').addEventListener('click', () => { playSound('click'); goToMenu(); });
+        document.querySelectorAll('.mission-btn').forEach(btn => { btn.addEventListener('click', (e) => prepareGame(e.target.dataset.missionId)); });
+        
+        backFromIntroBtn.addEventListener('click', () => { playSound('click'); introModal.classList.add('hidden'); introModal.classList.remove('flex'); });
+        homeBtn.addEventListener('click', () => { playSound('click'); goToMenu(); });
+        
+        continueToThanksBtn.addEventListener('click', () => {
+            playSound('click');
+            switchScreen('thank-you-screen');
+            fireworksCanvas.style.display = 'block';
+            startFireworks();
+        });
         settingsBtn.addEventListener('click', () => { playSound('click'); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); timeSettingInput.value = getGameTime(); missionSelectForEdit.innerHTML = ''; Object.keys(missions).forEach(missionId => { const option = document.createElement('option'); option.value = missionId; option.textContent = missions[missionId].title; missionSelectForEdit.appendChild(option); }); const firstMissionId = Object.keys(missions)[0]; missionSelectForEdit.value = firstMissionId; questionsInput.value = missions[firstMissionId].questions; updateSelectedBgVisual(); });
         closeSettingsBtn.addEventListener('click', () => { playSound('click'); const newTime = parseInt(timeSettingInput.value); if (newTime && newTime >= 5 && newTime <= 180) { localStorage.setItem('rungChuongVangTime', newTime); } else { timeSettingInput.value = getGameTime(); } const missionIdToSave = missionSelectForEdit.value; const newQuestionsText = questionsInput.value.trim(); const questionLines = newQuestionsText.split("\n").filter(line => line.trim() !== ''); const areQuestionsValid = questionLines.every(line => line.split(',').length === 6); if (newQuestionsText === '' || !areQuestionsValid) { setupError.textContent = "Lỗi định dạng câu hỏi, không thể lưu!"; setupError.classList.remove('hidden'); return; } else { setupError.classList.add('hidden'); missions[missionIdToSave].questions = newQuestionsText; } settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
         resetBgBtn.addEventListener('click', () => { playSound('click'); resetBackground(); });
         missionSelectForEdit.addEventListener('change', () => { const selectedMissionId = missionSelectForEdit.value; questionsInput.value = missions[selectedMissionId].questions; });
         volumeControl.addEventListener('click', () => { isMuted = !isMuted; volumeControl.textContent = isMuted ? '🔇' : '🔊'; if (isMuted) { stopBackgroundMusic(); } else { initAudio(); if (currentMission && document.getElementById('game-screen').classList.contains('active')) { currentMission.audio(); } } });
-        startGameBtn.addEventListener('click', () => { initAudio(); playSound('click'); const rawQuestions = currentMission.questions.trim(); parseQuestions(rawQuestions); if (questions.length === 0) { alert("Không tìm thấy câu hỏi hợp lệ! Vui lòng kiểm tra lại trong phần Cài Đặt."); return; } currentQuestionIndex = 0; isHelpUsed = false; score = 0; scoreDisplay.textContent = 'Điểm: 0'; switchScreen('game-screen'); currentMission.audio(); showQuestion(); });
+        startGameBtn.addEventListener('click', () => { initAudio(); playSound('click'); introModal.classList.add('hidden'); introModal.classList.remove('flex'); const rawQuestions = currentMission.questions.trim(); parseQuestions(rawQuestions); if (questions.length === 0) { alert("Không tìm thấy câu hỏi hợp lệ! Vui lòng kiểm tra lại trong phần Cài Đặt."); return; } currentQuestionIndex = 0; isHelpUsed = false; score = 0; scoreDisplay.textContent = 'Điểm: 0'; switchScreen('game-screen'); currentMission.audio(); showQuestion(); });
         helpBtn.addEventListener('click', useHelp);
         pauseBtn.addEventListener('click', pauseGame);
         resumeBtn.addEventListener('click', resumeGame);
@@ -534,7 +599,7 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
             q.answers.forEach(a => {
                 if (a.text.trim() === '') return;
                 const b = document.createElement('button');
-                b.className = 'btn-glow w-full text-xl p-4 text-left';
+                b.className = 'btn-glow w-full text-3xl p-4 text-left';
                 b.dataset.answerId = a.id;
                 b.innerHTML = `<span class="bg-slate-700 text-cyan-300 rounded-full px-3 py-1 mr-4 font-bold">${a.id}</span> ${a.text}`;
                 b.onclick = () => selectAnswer(a.id, b);
@@ -640,12 +705,58 @@ Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép
 
         function disableAnswerButtons() { Array.from(answersContainer.children).forEach(btn => { btn.disabled = true; btn.style.transform = 'none'; }); }
 
+        // --- Fireworks Logic ---
+        const fireworksCtx = fireworksCanvas.getContext('2d');
+        let fireworks = [], particles = [], animationFrameId, launchIntervalId;
+        const initFireworks = () => {
+            fireworksCanvas.width = window.innerWidth;
+            fireworksCanvas.height = window.innerHeight;
+        };
+        const startFireworks = () => {
+            initFireworks();
+            const loop = () => {
+                fireworksCtx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+                fireworksCtx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+                
+                fireworks.forEach((f, i) => { f.update(); f.draw(); if (f.done) fireworks.splice(i, 1); });
+                particles.forEach((p, i) => { p.update(); p.draw(); if (p.done) particles.splice(i, 1); });
+                
+                animationFrameId = requestAnimationFrame(loop);
+            };
+            loop();
+            launchIntervalId = setInterval(() => launchFirework(), 800);
+        };
+        const stopFireworks = () => {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (launchIntervalId) clearInterval(launchIntervalId);
+            fireworks = []; particles = [];
+            fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+        };
+        const launchFirework = () => { 
+            playSound('firework');
+            fireworks.push(new Firework()); 
+        };
+        
+        class Particle {
+            constructor(x, y, color) { this.x = x; this.y = y; this.color = color; this.size = Math.random() * 2 + 1; this.alpha = 1; this.friction = 0.98; this.gravity = 0.1; const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 8 + 1; this.vx = Math.cos(angle) * speed; this.vy = Math.sin(angle) * speed; this.done = false; }
+            update() { this.vy += this.gravity; this.vx *= this.friction; this.vy *= this.friction; this.x += this.vx; this.y += this.vy; this.alpha -= 0.02; if (this.alpha <= 0) this.done = true; }
+            draw() { fireworksCtx.save(); fireworksCtx.globalAlpha = this.alpha; fireworksCtx.beginPath(); fireworksCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); fireworksCtx.fillStyle = this.color; fireworksCtx.fill(); fireworksCtx.restore(); }
+        }
+
+        class Firework {
+            constructor() { this.color = `hsl(${Math.random() * 360}, 100%, 50%)`; this.x = Math.random() * fireworksCanvas.width; this.y = fireworksCanvas.height; this.targetY = Math.random() * (fireworksCanvas.height / 2); this.vy = -6; this.done = false; }
+            update() { this.y += this.vy; if (this.y < this.targetY) { this.explode(); this.done = true; } }
+            draw() { fireworksCtx.beginPath(); fireworksCtx.arc(this.x, this.y, 3, 0, Math.PI * 2, false); fireworksCtx.fillStyle = this.color; fireworksCtx.fill(); }
+            explode() { for (let i = 0; i < 50; i++) particles.push(new Particle(this.x, this.y, this.color)); }
+        }
+
         // Initial load
         window.onload = () => {
              const userBg = localStorage.getItem('userBackground');
              if (userBg) { applyBackground(userBg); }
              populateBackgroundOptions();
              goToMenu();
+             window.addEventListener('resize', initFireworks);
         };
     </script>
 </body>
