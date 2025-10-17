@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rung Chuông Vàng - Chinh Phục Đa Vũ Trụ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0F172A; /* slate-900 */
+            background-size: cover;
+            background-position: center;
+            color: #E2E8F0; /* slate-200 */
+            overflow: hidden;
+            transition: background-image 0.7s ease-in-out;
+        }
+        .screen {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.7s ease-in-out;
+        }
+        .screen.active {
+            display: flex;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8); /* bg-slate-900 with 80% opacity */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.2); /* cyan-400 */
+            box-shadow: 0 0 40px rgba(0,0,0,0.6);
+            animation: slideInUp 0.6s ease-out;
+        }
+        .btn-glow {
+            position: relative; /* Added for pseudo-elements */
+            background: linear-gradient(45deg, #0ea5e9, #6366f1);
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.5);
+            transition: all 0.2s ease-in-out;
+            color: white;
+            font-weight: 600;
+        }
+        .btn-glow:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.8);
+        }
+        .btn-glow:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 0 8px rgba(14, 165, 233, 0.6);
+        }
+        .btn-glow:disabled {
+            background: #334155; /* slate-700 */
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+        .winner-trophy {
+            animation: float 3s ease-in-out infinite;
+            text-shadow: 0 0 20px #FACC15; /* amber-400 */
+        }
+        .timer-warning {
+            animation: pulseRed 1s infinite;
+        }
+        .bg-option.selected {
+            border: 3px solid #0ea5e9; /* cyan-500 */
+            transform: scale(1.05);
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+        @keyframes pulsate { 0% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.5); } 50% { box-shadow: 0 0 25px rgba(236, 72, 153, 1); } 100% { box-shadow: 0 0 15px rgba(236, 72, 153, 0.5); } }
+        @keyframes pulseRed { 0% { transform: scale(1); color: #fb7185; } 50% { transform: scale(1.1); color: #f43f5e; } 100% { transform: scale(1); color: #fb7185; } }
+
+        /* Effects CSS */
+        #mascot.mascot-bounce { animation: bounce 0.5s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        
+        .sparkle { position: absolute; width: 10px; height: 10px; background: #fde047; border-radius: 50%; pointer-events: none; z-index: 100; animation: sparkle-burst 0.6s ease-out forwards; box-shadow: 0 0 10px #fde047; }
+        @keyframes sparkle-burst { from { transform: scale(1); opacity: 1; } to { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; } }
+        
+        .confetti-piece { position: absolute; width: 10px; height: 10px; background-color: var(--color); top: -20px; opacity: 0; animation: confetti-fall 5s linear forwards; }
+        @keyframes confetti-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+        
+        #evolution-display { transition: transform 0.3s ease; }
+        #evolution-display.evolved { animation: evolution-pop 0.5s ease-out; }
+        @keyframes evolution-pop { 0% { transform: scale(1); } 50% { transform: scale(1.5) rotate(15deg); } 100% { transform: scale(1) rotate(0deg); } }
+
+        @keyframes shake-horizontal {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        .shake-it {
+            animation: shake-horizontal 0.6s both;
+        }
+
+        #question-container.pop-in {
+            animation: pop-in 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .correct-answer-glow::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            padding-bottom: 200%;
+            background: radial-gradient(circle, rgba(34,197,94,0.4) 0%, rgba(34,197,94,0) 60%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: radiate 0.8s ease-out;
+            z-index: -1;
+        }
+        @keyframes radiate {
+            from { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+            to { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div id="volume-control" class="fixed top-4 right-4 text-4xl cursor-pointer z-50" style="text-shadow: 0 0 10px #0ea5e9;">🔊</div>
+    <div id="fullscreen-control" class="fixed top-5 right-16 text-3xl cursor-pointer z-50" title="Toàn màn hình" style="text-shadow: 0 0 10px #0ea5e9;">⛶</div>
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100]"></div>
+    <div id="feedback-overlay" class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white opacity-0 pointer-events-none transition-opacity duration-500 z-[240]"></div>
+
+    <!-- Main Menu Screen -->
+    <div id="main-menu-screen" class="screen justify-center items-center active">
+        <div class="glass-card p-8 w-full max-w-4xl text-center">
+            <h1 class="text-5xl font-bold text-cyan-300 mb-4">CHỌN CUỘC PHIÊU LƯU</h1>
+            <p class="text-slate-300 mb-6 text-lg">Mỗi hành trình là một thử thách mới. Bạn đã sẵn sàng chưa?</p>
+            <div class="mb-6">
+                <h2 class="text-2xl text-amber-300 font-semibold mb-3">BỘ SƯU TẬP HUY HIỆU</h2>
+                <div id="badge-collection" class="flex justify-center items-center gap-4 text-4xl">
+                    <!-- Badges will be injected by JS -->
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <button id="mission-space-btn" class="btn-glow w-full text-xl py-4">🚀 Chinh Phục Ngân Hà</button>
+                <button id="mission-science-btn" class="btn-glow w-full text-xl py-4">🪐 Phòng Thí Nghiệm Bí Ẩn</button>
+                <button id="mission-jungle-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #16a34a, #22c55e);">🌳 Cuộc Đua Kỳ Thú</button>
+                <button id="mission-ocean-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #0891b2, #22d3ee);">🐠 Săn Tìm Kho Báu</button>
+                <button id="mission-fairytale-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #c026d3, #ec4899);">🏰 Lâu Đài Phép Thuật</button>
+                <button id="mission-vietnam-btn" class="btn-glow w-full text-xl py-4" style="background: linear-gradient(45deg, #dc2626, #f97316);">🇻🇳 Khám Phá Việt Nam Diệu Kỳ</button>
+            </div>
+            <button id="settings-btn" class="btn-glow w-full text-xl py-3 mt-4" style="background: linear-gradient(45deg, #334155, #475569);">⚙️ Cài Đặt</button>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-70 justify-center items-center z-[200] hidden">
+        <div class="glass-card p-8 w-full max-w-4xl text-center relative overflow-y-auto max-h-screen">
+            <button id="close-settings-btn" class="absolute top-4 right-4 text-4xl text-slate-300 hover:text-white">&times;</button>
+            <h2 class="text-4xl font-bold text-cyan-300 mb-6">Cài Đặt</h2>
+            
+            <div class="border-t border-slate-700 pt-6 mb-6">
+                <h3 class="text-3xl font-bold text-cyan-300 mb-6">Thay Đổi Hình Nền</h3>
+                <div id="background-options" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
+                <button id="reset-bg-btn" class="btn-glow w-full text-xl py-3" style="background: linear-gradient(45deg, #ef4444, #dc2626);">Khôi Phục Mặc Định</button>
+            </div>
+            
+            <div class="border-t border-slate-700 pt-6 mb-6">
+                <h3 class="text-3xl font-bold text-cyan-300 mb-6">Cài Đặt Thời Gian</h3>
+                <div class="flex items-center justify-center gap-4">
+                    <label for="time-setting-input" class="text-xl">Thời gian mỗi câu (5-180 giây):</label>
+                    <input type="number" id="time-setting-input" min="5" max="180" class="w-24 p-2 rounded-lg bg-slate-800 text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                </div>
+            </div>
+
+            <div class="border-t border-slate-700 pt-6">
+                <h3 class="text-3xl font-bold text-cyan-300 mb-6">Chỉnh Sửa Bộ Câu Hỏi</h3>
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <label for="mission-select-for-edit" class="text-xl">Chọn bộ câu hỏi:</label>
+                    <select id="mission-select-for-edit" class="p-2 rounded-lg bg-slate-800 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-cyan-400"></select>
+                </div>
+                <textarea id="questions-input" class="w-full h-64 p-4 border border-slate-600 rounded-lg bg-slate-800 bg-opacity-70 text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"></textarea>
+                <p id="setup-error" class="text-red-400 mt-4 font-semibold hidden"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="fixed inset-0 bg-black bg-opacity-70 justify-center items-center z-[200] hidden">
+        <div class="glass-card p-8 w-full max-w-sm text-center">
+            <h2 class="text-4xl font-bold text-cyan-300 mb-6">ĐÃ TẠM DỪNG</h2>
+            <button id="resume-btn" class="btn-glow w-full text-xl py-3">TIẾP TỤC</button>
+        </div>
+    </div>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen justify-center items-center">
+        <div class="glass-card p-8 w-full max-w-3xl text-center">
+            <h1 id="setup-title" class="text-4xl font-bold text-cyan-300 mb-2">CHUẨN BỊ SỨ MỆNH</h1>
+            <p id="mission-intro-text" class="text-lg text-amber-200 my-4 italic"></p>
+            <p class="text-slate-300 mb-6">Bạn đã sẵn sàng để bắt đầu chưa? Bạn có thể thay đổi bộ câu hỏi trong phần ⚙️ Cài Đặt.</p>
+            <div class="flex space-x-4 mt-6">
+                <button id="back-to-menu-btn" class="btn-glow w-1/3 text-2xl py-4" style="background: linear-gradient(45deg, #6b7280, #4b5563);">QUAY LẠI</button>
+                <button id="start-game-btn" class="btn-glow w-2/3 text-2xl py-4">BẮT ĐẦU!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen justify-center items-center">
+        <div class="glass-card p-8 w-full max-w-4xl text-center">
+             <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-4 w-1/3">
+                    <div id="progress-indicator" class="text-xl font-bold text-cyan-300"></div>
+                    <div id="evolution-display" class="text-5xl"></div>
+                </div>
+                <div id="score-display" class="text-3xl font-bold text-amber-300 w-1/3 text-center">Điểm: 0</div>
+                <div class="flex items-center gap-4 w-1/3 justify-end">
+                    <div class="text-5xl font-bold text-fuchsia-400" id="timer"></div>
+                    <div class="flex items-center gap-4">
+                        <button id="quit-game-btn" class="text-4xl cursor-pointer hover:scale-110 transition-transform" title="Về màn hình chính">⏪</button>
+                        <button id="pause-btn" class="text-4xl cursor-pointer hover:scale-110 transition-transform" title="Tạm dừng">⏸️</button>
+                        <button id="help-btn" class="btn-glow px-4 py-2 rounded-lg text-lg" style="background: linear-gradient(45deg, #ec4899, #d946ef);">⚡ Trợ Giúp</button>
+                    </div>
+                </div>
+            </div>
+            <div id="question-container" class="bg-slate-900 bg-opacity-50 p-6 rounded-lg min-h-[150px] flex items-center justify-center border border-slate-700">
+                <h2 id="question-text" class="text-3xl font-semibold text-white"></h2>
+            </div>
+            <div id="answers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"></div>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen" class="screen justify-center items-center">
+        <div class="glass-card p-12 relative w-full max-w-2xl text-center">
+            <h2 id="result-title" class="text-5xl font-bold text-cyan-300 mb-4"></h2>
+            <div id="result-icon" class="text-8xl mb-6"></div>
+            <p id="final-score-display" class="text-3xl text-amber-300 font-bold mb-6"></p>
+            <p id="result-message" class="text-xl text-slate-300 mb-8"></p>
+            <button id="play-again-btn" class="btn-glow w-full text-2xl py-4">CHƠI LẠI TỪ ĐẦU</button>
+        </div>
+    </div>
+    
+    <div id="mascot" class="fixed bottom-4 left-4 text-6xl z-50 transition-transform duration-300"></div>
+    <footer class="fixed bottom-4 left-0 right-0 text-center text-slate-300 text-sm z-50" style="text-shadow: 0 0 5px rgba(14, 165, 233, 0.7);">
+        HỌC VÀ CHƠI CÙNG CÔ VŨ THỊ HƯƠNG - TRƯỜNG TIỂU HỌC HẢI THANH
+    </footer>
+
+    <script>
+        // --- Configurations ---
+        const backgrounds = {
+            default_space: `url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop')`,
+            deep_space: `url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1822&auto=format&fit=crop')`,
+            default_jungle: `url('https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?q=80&w=1974&auto=format&fit=crop')`,
+            fantasy_forest: `url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2070&auto=format&fit=crop')`,
+            default_ocean: `url('https://images.unsplash.com/photo-1524704796725-9fc3044a58b2?q=80&w=2070&auto=format&fit=crop')`,
+            coral_reef: `url('https://images.unsplash.com/photo-1551893309-c47312150488?q=80&w=2070&auto=format&fit=crop')`,
+            abstract_tech: `url('https://images.unsplash.com/photo-1531315630201-bb15ab376539?q=80&w=2070&auto=format&fit=crop')`,
+            default_fairytale: `url('https://images.unsplash.com/photo-1597406603553-56233a75e3a3?q=80&w=1974&auto=format&fit=crop')`,
+            default_vietnam: `url('https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=2070&auto=format&fit=crop')`
+        };
+        const missions = {
+            space: { title: 'Chinh Phục Ngân Hà', intro: "Chào mừng thuyền trưởng! Hãy trả lời các câu hỏi để lắp ráp con tàu vũ trụ và bắt đầu hành trình khám phá các vì sao nhé!", progressText: 'Hành tinh', questions: `Năm nay Nam 7 tuổi chị Mai hơn Nam 5 tuổi. Hỏi năm nay chị Mai bao nhiêu tuổi?,2 tuổi,12 tuổi,13 tuổi, ,B
+Giải bài toán về nhiều hơn một số đơn vị ta thực hiện phép tính gì?,Phép trừ,Phép cộng, , ,B`, backgroundImage: backgrounds.default_space, audio: playSciFiMusic, evolution: ['🏗️', '🛠️', '🚀', '✨'], evolutionTriggers: [0, 1, 2, 3], badge: '🏅' },
+            science: { title: 'Phòng Thí Nghiệm Bí Ẩn', intro: "Nhà khoa học tài ba ơi! Các thí nghiệm đang chờ bạn. Mỗi câu trả lời đúng sẽ giúp hành tinh của chúng ta thêm xanh tươi đó!", progressText: 'Thí nghiệm', questions: `Nước chiếm bao nhiêu phần trăm bề mặt Trái Đất?,51%,61%,71%,81%,C\nChất nào cần thiết cho sự quang hợp của cây xanh?,Oxy,Carbon Dioxide,Nitơ,Hydro,B\nHành tinh nào được mệnh danh là "Hành tinh Đỏ"?,Sao Kim,Sao Hỏa,Sao Mộc,Sao Thổ,B\nĐơn vị cơ bản của sự sống là gì?,Phân tử,Tế bào,Mô,Cơ quan,B\nLoài động vật có vú nào biết bay?,Chim cánh cụt,Dơi,Đà điểu,Cá heo,B`, backgroundImage: `url('https://images.unsplash.com/photo-1446776811953-b23d579424c8?q=80&w=2070&auto=format&fit=crop')`, audio: playSciFiMusic, evolution: ['🌑', '💧', '🌱', '🌳'], evolutionTriggers: [0, 2, 4, 6], badge: '🔬' },
+            jungle: { title: 'Cuộc Đua Kỳ Thú', intro: "Nhà thám hiểm dũng cảm, khu rừng rậm rạp đầy thử thách đang chờ đợi. Hãy vượt qua các câu hỏi để xem cái cây của bạn lớn nhanh thế nào nhé!", progressText: 'Thử thách', questions: `Loài động vật nào được mệnh danh là "chúa tể sơn lâm"?,Sư tử,Hổ,Báo,Voi,A\nCây nào sau đây thường mọc ở sa mạc?,Cây thông,Cây dương xỉ,Cây xương rồng,Cây phong,C\nCon vật nào có thể thay đổi màu sắc để ngụy trang?,Tắc kè hoa,Hà mã,Gấu trúc,Kangaroo,A\n"Vua của các loài trái cây" ở vùng nhiệt đới là quả gì?,Xoài,Dứa,Sầu riêng,Mít,C\nDòng sông dài nhất thế giới là sông nào?,Sông Mekong,Sông Nile,Sông Amazon,Sông Mississippi,C`, backgroundImage: backgrounds.default_jungle, audio: playJungleMusic, evolution: ['🌱', '🌿', '🌳', '🐒'], evolutionTriggers: [0, 2, 4, 6], badge: '🌴' },
+            ocean: { title: 'Săn Tìm Kho Báu', intro: "Nào ta cùng dong buồm ra khơi! Chiếc rương kho báu bí ẩn đang bị khóa chặt. Trả lời đúng để tìm chìa khóa và khám phá bí mật bên trong!", progressText: 'Cửa ải', questions: `Loài cá nào lớn nhất thế giới?,Cá mập trắng,Cá voi xanh,Cá nhám voi,Cá heo,C\nHầu hết san hô được tìm thấy ở vùng nước nào?,Nước ấm, nông,Nước lạnh, sâu,Nước ngọt,Nước lợ,A\nĐại dương nào lớn nhất trên Trái Đất?,Đại Tây Dương,Ấn Độ Dương,Thái Bình Dương,Bắc Băng Dương,C\nLoài vật nào có 8 xúc tu?,Sứa,Cá heo,Bạch tuộc,Cua,C\nHiện tượng nước biển dâng lên và hạ xuống gọi là gì?,Sóng thần,Thủy triều,Bão,Lốc xoáy,B`, backgroundImage: backgrounds.default_ocean, audio: playOceanMusic, evolution: ['📦', '🗝️', '✨', '💎'], evolutionTriggers: [0, 2, 4, 6], badge: '🐠' },
+            fairytale: { title: 'Lâu Đài Phép Thuật', intro: "Hoàng tử và công chúa ơi! Thế giới cổ tích diệu kỳ đang mở ra. Hãy dùng trí thông minh để xây dựng nên tòa lâu đài tráng lệ của riêng mình nhé!", progressText: 'Chương', questions: `Trong truyện Tấm Cám, Tấm đã biến thành con vật nào đầu tiên?,Con chim vàng anh,Con cá bống,Con gà,Con mèo,A\nAi đã giúp Lọ Lem đi dự vũ hội?,Bà tiên,Ông bụt,Mẹ kế,Phù thủy,A\nNàng Bạch Tuyết đã ăn phải thứ gì của mụ phù thủy?,Quả táo độc,Quả lê độc,Quả cam độc,Quả nho độc,A\nNhân vật nào có chiếc mũi dài ra khi nói dối?,Cậu bé Pinocchio,Cậu bé bút chì,Cậu bé người gỗ,Cậu bé rơm,A\nTrong truyện "Sự tích cây vú sữa", cậu bé đã làm gì khiến mẹ buồn?,Ham chơi không về,Nói dối mẹ,Không nghe lời mẹ,Tất cả các đáp án trên,D`, backgroundImage: backgrounds.default_fairytale, audio: playFairyTaleMusic, evolution: ['🎃', '✨', '👑', '🏰'], evolutionTriggers: [0, 2, 4, 6], badge: '👑' },
+            vietnam: { title: 'Khám Phá Việt Nam Diệu Kỳ', intro: "Bạn đã sẵn sàng cho chuyến du lịch vòng quanh Việt Nam chưa? Mỗi câu trả lời đúng sẽ đưa chúng ta đến một địa danh mới trên bản đồ hình chữ S!", progressText: 'Trạm', questions: `Vịnh nào của Việt Nam được UNESCO công nhận là Di sản Thiên nhiên Thế giới?,Vịnh Cam Ranh,Vịnh Lăng Cô,Vịnh Hạ Long,Vịnh Vĩnh Hy,C\nPhở là món ăn đặc trưng của miền nào?,Miền Nam,Miền Trung,Miền Bắc,Miền Tây,C\nThành phố nào được mệnh danh là "Thành phố ngàn hoa"?,Đà Lạt,Nha Trang,Hội An,Sa Pa,A\nQuần đảo nào của Việt Nam nằm ở phía Tây Nam của Tổ quốc?,Quần đảo Hoàng Sa,Quần đảo Trường Sa,Quần đảo Thổ Chu,Quần đảo Côn Sơn,C\nLễ hội nào sau đây là một lễ hội lớn ở Đồng bằng Sông Cửu Long?,Lễ hội Chùa Hương,Lễ hội Đền Hùng,Lễ hội Ok Om Bok,Lễ hội Gầu Tào,C`, backgroundImage: backgrounds.default_vietnam, audio: playVietnamMusic, evolution: ['🗺️', '📍', '⭐', '🇻🇳'], evolutionTriggers: [0, 2, 4, 6], badge: '⭐' }
+        };
+        const correctFeedbackTexts = [ "Tuyệt vời!", "Chính xác!", "Làm tốt lắm!", "Bạn giỏi quá!", "Xuất sắc!" ];
+        const wrongFeedbackTexts = [ "Cố lên nào!", "Sai một chút thôi!", "Thử lại câu sau nhé!", "Đừng nản lòng!", "Tiếp tục cố gắng!" ];
+
+        // --- DOM Elements ---
+        const screens = document.querySelectorAll('.screen');
+        const setupTitle = document.getElementById('setup-title');
+        const questionsInput = document.getElementById('questions-input');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const setupError = document.getElementById('setup-error');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const timerDisplay = document.getElementById('timer');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const helpBtn = document.getElementById('help-btn');
+        const resultTitle = document.getElementById('result-title');
+        const resultIcon = document.getElementById('result-icon');
+        const resultMessage = document.getElementById('result-message');
+        const volumeControl = document.getElementById('volume-control');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const backgroundOptionsContainer = document.getElementById('background-options');
+        const resetBgBtn = document.getElementById('reset-bg-btn');
+        const mascot = document.getElementById('mascot');
+        const confettiContainer = document.getElementById('confetti-container');
+        const evolutionDisplay = document.getElementById('evolution-display');
+        const pauseBtn = document.getElementById('pause-btn');
+        const pauseModal = document.getElementById('pause-modal');
+        const resumeBtn = document.getElementById('resume-btn');
+        const scoreDisplay = document.getElementById('score-display');
+        const badgeCollectionContainer = document.getElementById('badge-collection');
+        const finalScoreDisplay = document.getElementById('final-score-display');
+        const timeSettingInput = document.getElementById('time-setting-input');
+        const quitGameBtn = document.getElementById('quit-game-btn');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const missionIntroText = document.getElementById('mission-intro-text');
+        const missionSelectForEdit = document.getElementById('mission-select-for-edit');
+        const fullscreenControl = document.getElementById('fullscreen-control');
+
+        // --- Game State ---
+        let questions = []; let currentQuestionIndex = 0; let timeLeft = 20; let timerInterval; let isHelpUsed = false; let isMuted = false; let currentMission; let score = 0; let currentMissionId;
+        
+        // --- Audio Engine ---
+        let audioCtx; let activeAudioNodes = [];
+        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
+        function stopBackgroundMusic() { activeAudioNodes.forEach(node => { if (typeof node.stop === 'function') { node.stop(); } if (typeof node.disconnect === 'function') { node.disconnect(); } }); activeAudioNodes = []; }
+        
+        function playSciFiMusic() { if (!audioCtx || isMuted) return; stopBackgroundMusic(); const melody = [ 261, 261, 392, 392, 440, 440, 392, 349, 349, 329, 329, 293, 293, 261 ]; const noteDuration = 0.3; const intervalTime = 400; let currentNote = 0; const melodyInterval = setInterval(() => { if (isMuted) return; const freq = melody[currentNote]; if (freq) { const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); oscillator.connect(gainNode); gainNode.connect(audioCtx.destination); oscillator.type = 'triangle'; oscillator.frequency.value = freq; gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + noteDuration); oscillator.start(audioCtx.currentTime); oscillator.stop(audioCtx.currentTime + noteDuration); } currentNote = (currentNote + 1) % melody.length; }, intervalTime); activeAudioNodes.push({ stop: () => clearInterval(melodyInterval) }); }
+        function playJungleMusic() { if (!audioCtx || isMuted) return; stopBackgroundMusic(); const tomGain = audioCtx.createGain(); tomGain.gain.value = 0.3; tomGain.connect(audioCtx.destination); const tomInterval = setInterval(() => { if(isMuted) return; const tom = audioCtx.createOscillator(); tom.type = 'sine'; tom.frequency.setValueAtTime(150, audioCtx.currentTime); tomGain.gain.setValueAtTime(0.3, audioCtx.currentTime); tomGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); tom.connect(tomGain); tom.start(); tom.stop(audioCtx.currentTime + 0.5); }, 1500); const cricketGain = audioCtx.createGain(); cricketGain.gain.value = 0.03; const cricket = audioCtx.createOscillator(); cricket.type = 'triangle'; cricket.frequency.value = 4000; const cricketLFO = audioCtx.createOscillator(); cricketLFO.type = 'square'; cricketLFO.frequency.value = 5; cricketLFO.connect(cricketGain.gain); cricket.connect(cricketGain).connect(audioCtx.destination); cricket.start(); cricketLFO.start(); activeAudioNodes.push({ stop: () => clearInterval(tomInterval) }, cricket, cricketLFO); }
+        function playOceanMusic() { if (!audioCtx || isMuted) return; stopBackgroundMusic(); const bufferSize = 4096; let lastOut = 0.0; const node = audioCtx.createScriptProcessor(bufferSize, 1, 1); node.onaudioprocess = function(e) { const output = e.outputBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { const white = Math.random() * 2 - 1; output[i] = (lastOut + (0.02 * white)) / 1.02; lastOut = output[i]; output[i] *= 3.5; } }; const gainNode = audioCtx.createGain(); gainNode.gain.value = 0.1; node.connect(gainNode).connect(audioCtx.destination); const bubbleInterval = setInterval(() => { if (isMuted) return; const bubble = audioCtx.createOscillator(); const bubbleGain = audioCtx.createGain(); bubble.connect(bubbleGain).connect(audioCtx.destination); const now = audioCtx.currentTime; bubble.frequency.setValueAtTime(500 + Math.random() * 500, now); bubble.frequency.exponentialRampToValueAtTime(1500 + Math.random() * 500, now + 0.2); bubbleGain.gain.setValueAtTime(0.1, now); bubbleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); bubble.start(now); bubble.stop(now + 0.2); }, 2000 + Math.random() * 2000); activeAudioNodes.push(node, { stop: () => clearInterval(bubbleInterval) }); }
+        function playFairyTaleMusic() { if (!audioCtx || isMuted) return; stopBackgroundMusic(); const melody = [523, 587, 659, 698, 783, 880, 783, 698]; const noteDuration = 0.35; let currentNote = 0; const melodyInterval = setInterval(() => { if (isMuted) return; const freq = melody[currentNote]; if (freq) { const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); oscillator.connect(gainNode).connect(audioCtx.destination); oscillator.type = 'sine'; oscillator.frequency.value = freq; gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + noteDuration); oscillator.start(audioCtx.currentTime); oscillator.stop(audioCtx.currentTime + noteDuration); } currentNote = (currentNote + 1) % melody.length; }, 450); activeAudioNodes.push({ stop: () => clearInterval(melodyInterval) }); }
+        function playVietnamMusic() { if (!audioCtx || isMuted) return; stopBackgroundMusic(); const melody = [261, 293, 329, 392, 440, 392, 329, 293]; const noteDuration = 0.4; let currentNote = 0; const melodyInterval = setInterval(() => { if (isMuted) return; const freq = melody[currentNote]; if (freq) { const oscillator = audioCtx.createOscillator(); const gainNode = audioCtx.createGain(); oscillator.connect(gainNode).connect(audioCtx.destination); oscillator.type = 'triangle'; oscillator.frequency.value = freq; gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + noteDuration); oscillator.start(audioCtx.currentTime); oscillator.stop(audioCtx.currentTime + noteDuration); } currentNote = (currentNote + 1) % melody.length; }, 500); activeAudioNodes.push({ stop: () => clearInterval(melodyInterval) }); }
+        
+        function playSound(type) {
+            if (!audioCtx || isMuted) return;
+            switch (type) {
+                case 'correct': {
+                    // This creates a sound resembling a short burst of applause
+                    for (let i = 0; i < 25; i++) {
+                        const noiseSource = audioCtx.createBufferSource();
+                        const bufferSize = audioCtx.sampleRate * 0.5; // Longer clap sound
+                        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let j = 0; j < bufferSize; j++) {
+                            data[j] = Math.random() * 2 - 1;
+                        }
+                        noiseSource.buffer = buffer;
+
+                        const bandpass = audioCtx.createBiquadFilter();
+                        bandpass.type = 'bandpass';
+                        bandpass.frequency.value = 1200 + Math.random() * 1500;
+
+                        const gainNode = audioCtx.createGain();
+                        const delay = Math.random() * 0.8; // Spread out claps over 0.8s
+
+                        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime + delay);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.3);
+                        
+                        noiseSource.connect(bandpass).connect(gainNode).connect(audioCtx.destination);
+                        noiseSource.start(audioCtx.currentTime + delay);
+                    }
+
+                    // Cheering part
+                    for (let i = 0; i < 8; i++) { // 8 "voices"
+                        const oscillator = audioCtx.createOscillator();
+                        const gainNode = audioCtx.createGain();
+
+                        // Vibrato
+                        const lfo = audioCtx.createOscillator();
+                        lfo.frequency.value = Math.random() * 5 + 4; // Vibrato speed
+                        const lfoGain = audioCtx.createGain();
+                        lfoGain.gain.value = 10 + Math.random() * 10; // Vibrato depth
+
+                        lfo.connect(lfoGain).connect(oscillator.frequency);
+
+                        oscillator.type = 'sawtooth';
+                        oscillator.frequency.value = 300 + Math.random() * 300; // Voice pitch
+                        
+                        const delay = Math.random() * 0.3;
+                        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                        gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + delay + 0.1); // Fade in
+                        gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + delay + 1.0); // Fade out over 1s
+
+                        oscillator.connect(gainNode).connect(audioCtx.destination);
+                        
+                        oscillator.start(audioCtx.currentTime + delay);
+                        lfo.start(audioCtx.currentTime + delay);
+                        oscillator.stop(audioCtx.currentTime + delay + 1.2);
+                        lfo.stop(audioCtx.currentTime + delay + 1.2);
+                    }
+
+                    return;
+                }
+                case 'wrong': {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(220, audioCtx.currentTime); // A3 note
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.7);
+                    oscillator.connect(gainNode).connect(audioCtx.destination);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 1);
+                    return;
+                }
+                case 'tick': {
+                    const oscillator = audioCtx.createOscillator();
+                    const tickGain = audioCtx.createGain();
+                    tickGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                    tickGain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+                    oscillator.connect(tickGain).connect(audioCtx.destination);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.1);
+                    return;
+                }
+                case 'click': {
+                     const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4 note
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                    oscillator.connect(gainNode).connect(audioCtx.destination);
+                    oscillator.start();
+                    oscillator.stop(audioCtx.currentTime + 1);
+                    return;
+                }
+                case 'win': {
+                    const gainNode = audioCtx.createGain();
+                    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    [659, 783, 1046].forEach((freq, i) => { // E5, G5, C6
+                        const osc = audioCtx.createOscillator();
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.2);
+                        osc.connect(gainNode).connect(audioCtx.destination);
+                        osc.start(audioCtx.currentTime + i * 0.2);
+                        osc.stop(audioCtx.currentTime + i * 0.2 + 0.2);
+                    });
+                    return;
+                }
+                case 'lose': {
+                    const gainNode = audioCtx.createGain();
+                    gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                    [349, 261, 174].forEach((freq, i) => { // F4, C4, F3
+                        const osc = audioCtx.createOscillator();
+                        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.25);
+                        osc.connect(gainNode).connect(audioCtx.destination);
+                        osc.start(audioCtx.currentTime + i * 0.25);
+                        osc.stop(audioCtx.currentTime + i * 0.25 + 0.2);
+                    });
+                    return;
+                }
+            }
+        }
+
+        // --- Effects & Badge Functions ---
+        function updateMascot(state) { mascot.classList.remove('mascot-bounce'); void mascot.offsetWidth; switch (state) { case 'happy': mascot.textContent = '🥳'; mascot.classList.add('mascot-bounce'); break; case 'sad': mascot.textContent = '😟'; break; case 'worried': mascot.textContent = '😨'; break; case 'neutral': default: mascot.textContent = '🚀'; break; } }
+        function createSparkles(element) { const rect = element.getBoundingClientRect(); for (let i = 0; i < 15; i++) { const sparkle = document.createElement('div'); sparkle.className = 'sparkle'; document.body.appendChild(sparkle); const angle = Math.random() * 360; const distance = Math.random() * 50 + 50; sparkle.style.top = `${rect.top + rect.height / 2}px`; sparkle.style.left = `${rect.left + rect.width / 2}px`; sparkle.style.setProperty('--tx', `${Math.cos(angle * Math.PI / 180) * distance}px`); sparkle.style.setProperty('--ty', `${Math.sin(angle * Math.PI / 180) * distance}px`); setTimeout(() => sparkle.remove(), 600); } }
+        function triggerConfetti() { const colors = ['#0ea5e9', '#6366f1', '#10b981', '#facc15', '#ec4899']; for (let i = 0; i < 150; i++) { const piece = document.createElement('div'); piece.className = 'confetti-piece'; piece.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]); piece.style.left = `${Math.random() * 100}vw`; piece.style.animationDelay = `${Math.random() * 2}s`; piece.style.transform = `scale(${Math.random() * 0.5 + 0.5})`; confettiContainer.appendChild(piece); } setTimeout(() => confettiContainer.innerHTML = '', 5000); }
+        function updateEvolutionDisplay() { const { evolution, evolutionTriggers } = currentMission; let currentStageIndex = 0; for (let i = 0; i < evolutionTriggers.length; i++) { if (currentQuestionIndex >= evolutionTriggers[i]) { currentStageIndex = i; } } const newIcon = evolution[currentStageIndex]; if (evolutionDisplay.textContent !== newIcon) { evolutionDisplay.textContent = newIcon; evolutionDisplay.classList.add('evolved'); setTimeout(() => evolutionDisplay.classList.remove('evolved'), 500); } }
+        function getBadges() { const badges = localStorage.getItem('rungChuongVangBadges'); return badges ? JSON.parse(badges) : []; }
+        function saveBadge(missionId) { const badges = getBadges(); if (!badges.includes(missionId)) { badges.push(missionId); localStorage.setItem('rungChuongVangBadges', JSON.stringify(badges)); } }
+        function displayBadges() { const collectedBadges = getBadges(); badgeCollectionContainer.innerHTML = ''; Object.keys(missions).forEach(missionId => { const mission = missions[missionId]; const badgeEl = document.createElement('div'); badgeEl.title = mission.title; if (collectedBadges.includes(missionId)) { badgeEl.textContent = mission.badge; badgeEl.classList.add('opacity-100', 'cursor-pointer'); } else { badgeEl.textContent = '❓'; badgeEl.classList.add('opacity-30'); } badgeCollectionContainer.appendChild(badgeEl); }); }
+        
+        // --- Background & Time Functions ---
+        function getGameTime() { const savedTime = localStorage.getItem('rungChuongVangTime'); return savedTime ? parseInt(savedTime) : 180; }
+        function applyBackground(bgUrl) { document.body.style.backgroundImage = bgUrl; }
+        function updateSelectedBgVisual() { const selectedBg = localStorage.getItem('userBackground'); document.querySelectorAll('.bg-option').forEach(option => { option.classList.toggle('selected', option.dataset.bgUrl === selectedBg); }); }
+        function selectBackground(bgUrl) { playSound('click'); applyBackground(bgUrl); localStorage.setItem('userBackground', bgUrl); updateSelectedBgVisual(); }
+        function resetBackground() { localStorage.removeItem('userBackground'); const targetBg = (currentMission && !document.getElementById('main-menu-screen').classList.contains('active')) ? currentMission.backgroundImage : missions.space.backgroundImage; applyBackground(targetBg); updateSelectedBgVisual(); }
+        function populateBackgroundOptions() { backgroundOptionsContainer.innerHTML = ''; Object.entries(backgrounds).forEach(([key, url]) => { const option = document.createElement('div'); option.className = 'bg-option h-24 md:h-32 rounded-lg cursor-pointer bg-cover bg-center transition-all duration-200 hover:scale-105'; option.style.backgroundImage = url; option.dataset.bgUrl = url; option.addEventListener('click', () => selectBackground(url)); backgroundOptionsContainer.appendChild(option); }); }
+
+        // --- Navigation & Pause ---
+        function switchScreen(screenId) { screens.forEach(screen => { screen.classList.toggle('active', screen.id === screenId); }); }
+        function goToMenu() { stopBackgroundMusic(); const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(missions.space.backgroundImage); } updateMascot('neutral'); evolutionDisplay.textContent = ''; currentMission = null; displayBadges(); switchScreen('main-menu-screen'); }
+        function prepareGame(missionId) { playSound('click'); currentMissionId = missionId; currentMission = missions[missionId]; const userBg = localStorage.getItem('userBackground'); if (!userBg) { applyBackground(currentMission.backgroundImage); } setupTitle.textContent = `SỨ MỆNH: ${currentMission.title.toUpperCase()}`; missionIntroText.textContent = currentMission.intro; switchScreen('setup-screen'); }
+        function pauseGame() { playSound('click'); clearInterval(timerInterval); stopBackgroundMusic(); pauseModal.classList.remove('hidden'); pauseModal.classList.add('flex'); }
+        function resumeGame() { playSound('click'); pauseModal.classList.add('hidden'); pauseModal.classList.remove('flex'); if (!isMuted) { currentMission.audio(); } startTimer(true); } // Pass true to indicate resume
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+                    document.documentElement.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { // Firefox
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE/Edge
+                    document.msExitFullscreen();
+                }
+            }
+        }
+        
+        // --- Event Listeners ---
+        document.getElementById('mission-space-btn').addEventListener('click', () => prepareGame('space'));
+        document.getElementById('mission-science-btn').addEventListener('click', () => prepareGame('science'));
+        document.getElementById('mission-jungle-btn').addEventListener('click', () => prepareGame('jungle'));
+        document.getElementById('mission-ocean-btn').addEventListener('click', () => prepareGame('ocean'));
+        document.getElementById('mission-fairytale-btn').addEventListener('click', () => prepareGame('fairytale'));
+        document.getElementById('mission-vietnam-btn').addEventListener('click', () => prepareGame('vietnam'));
+        document.getElementById('back-to-menu-btn').addEventListener('click', () => { playSound('click'); goToMenu(); });
+        document.getElementById('play-again-btn').addEventListener('click', () => { playSound('click'); goToMenu(); });
+        settingsBtn.addEventListener('click', () => { playSound('click'); settingsModal.classList.remove('hidden'); settingsModal.classList.add('flex'); timeSettingInput.value = getGameTime(); missionSelectForEdit.innerHTML = ''; Object.keys(missions).forEach(missionId => { const option = document.createElement('option'); option.value = missionId; option.textContent = missions[missionId].title; missionSelectForEdit.appendChild(option); }); const firstMissionId = Object.keys(missions)[0]; missionSelectForEdit.value = firstMissionId; questionsInput.value = missions[firstMissionId].questions; updateSelectedBgVisual(); });
+        closeSettingsBtn.addEventListener('click', () => { playSound('click'); const newTime = parseInt(timeSettingInput.value); if (newTime && newTime >= 5 && newTime <= 180) { localStorage.setItem('rungChuongVangTime', newTime); } else { timeSettingInput.value = getGameTime(); } const missionIdToSave = missionSelectForEdit.value; const newQuestionsText = questionsInput.value.trim(); const questionLines = newQuestionsText.split("\n").filter(line => line.trim() !== ''); const areQuestionsValid = questionLines.every(line => line.split(',').length === 6); if (newQuestionsText === '' || !areQuestionsValid) { setupError.textContent = "Lỗi định dạng câu hỏi, không thể lưu!"; setupError.classList.remove('hidden'); return; } else { setupError.classList.add('hidden'); missions[missionIdToSave].questions = newQuestionsText; } settingsModal.classList.add('hidden'); settingsModal.classList.remove('flex'); });
+        resetBgBtn.addEventListener('click', () => { playSound('click'); resetBackground(); });
+        missionSelectForEdit.addEventListener('change', () => { const selectedMissionId = missionSelectForEdit.value; questionsInput.value = missions[selectedMissionId].questions; });
+        volumeControl.addEventListener('click', () => { isMuted = !isMuted; volumeControl.textContent = isMuted ? '🔇' : '🔊'; if (isMuted) { stopBackgroundMusic(); } else { initAudio(); if (currentMission && document.getElementById('game-screen').classList.contains('active')) { currentMission.audio(); } } });
+        startGameBtn.addEventListener('click', () => { initAudio(); playSound('click'); const rawQuestions = currentMission.questions.trim(); parseQuestions(rawQuestions); if (questions.length === 0) { alert("Không tìm thấy câu hỏi hợp lệ! Vui lòng kiểm tra lại trong phần Cài Đặt."); return; } currentQuestionIndex = 0; isHelpUsed = false; score = 0; scoreDisplay.textContent = 'Điểm: 0'; switchScreen('game-screen'); currentMission.audio(); showQuestion(); });
+        helpBtn.addEventListener('click', useHelp);
+        pauseBtn.addEventListener('click', pauseGame);
+        resumeBtn.addEventListener('click', resumeGame);
+        quitGameBtn.addEventListener('click', () => { playSound('click'); goToMenu(); });
+        fullscreenControl.addEventListener('click', () => { playSound('click'); toggleFullScreen(); });
+
+
+        // --- Game Flow ---
+        function parseQuestions(rawText) { questions=rawText.split("\n").map(e=>e.trim()).filter(e=>e.length>0).map(e=>{let parts=e.split(",");while(parts.length<6)parts.push("");return{question:parts[0].trim(),answers:[{text:parts[1].trim(),id:"A"},{text:parts[2].trim(),id:"B"},{text:parts[3].trim(),id:"C"},{text:parts[4].trim(),id:"D"}],correctAnswer:parts[5].trim().toUpperCase()}})}
+        
+        function showQuestion() {
+            if (currentQuestionIndex >= questions.length) { winGame(); return; }
+            updateMascot('neutral');
+            resetState();
+            updateEvolutionDisplay();
+            const q = questions[currentQuestionIndex];
+            const questionContainer = document.getElementById('question-container');
+
+            questionText.textContent = q.question;
+            progressIndicator.textContent = `${currentMission.progressText} ${currentQuestionIndex + 1}/${questions.length}`;
+            answersContainer.innerHTML = '';
+            q.answers.forEach(a => {
+                if (a.text.trim() === '') return;
+                const b = document.createElement('button');
+                b.className = 'btn-glow w-full text-xl p-4 text-left';
+                b.dataset.answerId = a.id;
+                b.innerHTML = `<span class="bg-slate-700 text-cyan-300 rounded-full px-3 py-1 mr-4 font-bold">${a.id}</span> ${a.text}`;
+                b.onclick = () => selectAnswer(a.id, b);
+                answersContainer.appendChild(b);
+            });
+            startTimer();
+
+            questionContainer.classList.remove('pop-in');
+            void questionContainer.offsetWidth; // Force reflow
+            questionContainer.classList.add('pop-in');
+        }
+
+        function selectAnswer(selectedId, button) {
+            clearInterval(timerInterval);
+            disableAnswerButtons();
+            const isCorrect = selectedId === questions[currentQuestionIndex].correctAnswer;
+            if (isCorrect) {
+                playSound('correct');
+                const points = 100 + (timeLeft * 5);
+                score += points;
+                scoreDisplay.textContent = `Điểm: ${score}`;
+                createSparkles(button);
+                updateMascot('happy');
+                button.classList.add('correct-answer-glow');
+                button.style.background = "linear-gradient(45deg, #22c55e, #10b981)";
+                button.style.boxShadow = "0 0 20px rgba(34, 197, 94, 0.7)";
+                
+                const randomCorrectText = correctFeedbackTexts[Math.floor(Math.random() * correctFeedbackTexts.length)];
+                feedbackOverlay.textContent = randomCorrectText;
+                feedbackOverlay.style.backgroundColor = 'rgba(34, 197, 94, 0.8)';
+                feedbackOverlay.style.opacity = "1";
+
+                setTimeout(() => {
+                    feedbackOverlay.style.opacity = "0";
+                    setTimeout(() => {
+                        button.classList.remove('correct-answer-glow');
+                    }, 500);
+                    currentQuestionIndex++;
+                    showQuestion();
+                }, 1500);
+            } else {
+                playSound('wrong');
+                score = Math.max(0, score - 50);
+                scoreDisplay.textContent = `Điểm: ${score}`;
+                updateMascot('sad');
+                button.classList.add('shake-it');
+                button.style.background = "linear-gradient(45deg, #ef4444, #e11d48)";
+                button.style.boxShadow = "0 0 20px rgba(239, 68, 68, 0.7)";
+                
+                const randomWrongText = wrongFeedbackTexts[Math.floor(Math.random() * wrongFeedbackTexts.length)];
+                feedbackOverlay.textContent = randomWrongText;
+                feedbackOverlay.style.backgroundColor = 'rgba(239, 68, 68, 0.8)';
+                feedbackOverlay.style.opacity = "1";
+
+                const correctButton = Array.from(answersContainer.children).find(btn => btn.dataset.answerId === questions[currentQuestionIndex].correctAnswer);
+                if (correctButton) {
+                    correctButton.style.background = 'linear-gradient(45deg, #22c55e, #10b981)';
+                    correctButton.style.boxShadow = '0 0 20px rgba(34, 197, 94, 0.7)';
+                }
+                setTimeout(() => {
+                    feedbackOverlay.style.opacity = "0";
+                    button.classList.remove('shake-it');
+                    currentQuestionIndex++;
+                    showQuestion();
+                }, 2000);
+            }
+        }
+        function useHelp() { if(isHelpUsed)return; playSound("click"); isHelpUsed=!0; helpBtn.disabled=!0; helpBtn.classList.remove("pulsate"); const q=questions[currentQuestionIndex]; const incorrect = q.answers.filter(a => a.id !== q.correctAnswer).sort(()=>.5-Math.random()).slice(0,2); incorrect.forEach(a => { const btn = Array.from(answersContainer.children).find(b => b.dataset.answerId === a.id); if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; } }); }
+        
+        function startTimer(isResuming = false) {
+            if (!isResuming) {
+                timeLeft = getGameTime();
+            }
+            timerDisplay.textContent = timeLeft;
+            timerInterval=setInterval(()=>{ 
+                timeLeft--; 
+                timerDisplay.textContent = timeLeft; 
+                if (timeLeft <= 5) { 
+                    timerDisplay.classList.add("timer-warning"); 
+                    updateMascot('worried'); 
+                    if(timeLeft > 0) playSound('tick'); 
+                } else { 
+                    timerDisplay.classList.remove("timer-warning"); 
+                } 
+                if (timeLeft <= 0) { 
+                    clearInterval(timerInterval); 
+                    playSound('wrong'); 
+                    gameOver("Hết thời gian!"); 
+                } 
+            }, 1000); 
+        }
+
+        function gameOver(message = "Nhiệm vụ thất bại!") { stopBackgroundMusic(); playSound('lose'); updateMascot('sad'); switchScreen('result-screen'); resultTitle.textContent = "THẤT BẠI!"; resultIcon.innerHTML = '💥'; finalScoreDisplay.textContent = `Điểm cuối: ${score}`; resultMessage.textContent = message; }
+        function winGame() { stopBackgroundMusic(); playSound('win'); updateMascot('happy'); triggerConfetti(); saveBadge(currentMissionId); switchScreen('result-screen'); resultTitle.textContent = "HOÀN THÀNH XUẤT SẮC!"; resultIcon.innerHTML = '<span class="winner-trophy">🏆</span>'; finalScoreDisplay.textContent = `Điểm cuối: ${score}`; resultMessage.textContent = `Chúc mừng! Bạn đã vượt qua tất cả thử thách của ${currentMission.title}!`; }
+        
+        function resetState() { 
+            clearInterval(timerInterval); 
+            timeLeft = getGameTime();
+            timerDisplay.classList.remove("timer-warning"); 
+            helpBtn.disabled=isHelpUsed; 
+            helpBtn.classList.toggle("pulsate", !isHelpUsed); 
+        }
+
+        function disableAnswerButtons() { Array.from(answersContainer.children).forEach(btn => { btn.disabled = true; btn.style.transform = 'none'; }); }
+
+        // Initial load
+        window.onload = () => {
+             const userBg = localStorage.getItem('userBackground');
+             if (userBg) { applyBackground(userBg); }
+             populateBackgroundOptions();
+             goToMenu();
+        };
+    </script>
+</body>
+</html>
+
